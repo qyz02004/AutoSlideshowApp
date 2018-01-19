@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button playButton;      // 再生ボタン
     Button nextButton;      // 進むボタン
     Cursor mCursor;          // 画像のアクセスに使用するカーソル
+    boolean permission = false; // 画像にアクセスするパーミッション判定結果
 
     Handler mHandler = new Handler();
 
@@ -37,42 +38,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Android 6.0以降の場合
+        // 外部ストレージへのアクセス許可を判定する
+        if (checkPermission()) {
+            permission = true;
+            // コンテンツへのアクセス情報を取得
+            getContentsInfo();
+        }
+        setClickListener();
+    }
+
+    // 外部ストレージへのアクセス許可を判定する
+    private boolean checkPermission() {
+
+        boolean result = false;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android 6.0以降の場合
             // パーミッションの許可状態を確認する
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                // 許可されている
-                getContentsInfo();
-                setClickListener();
+                result = true;
             } else {
                 // 許可されていないので許可ダイアログを表示する
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_CODE);
-            }
-            // Android 5系以下の場合
+           }
         } else {
-            getContentsInfo();
-            setClickListener();
+            // Android 6.0未満の場合はインストール時に権限が付与される
+            result = true;
         }
+
+        return result;
     }
-    
+
     @Override
     public void onClick(View v) {
+
         Log.d("UI_PARTS", "ボタンをタップしました");
-        if ( v == prevButton) {      // 戻るボタン
-            if (mCursor.moveToNext()) { // 次があれば
-                displayImage( mCursor );    // 表示
-            } else if (mCursor.moveToFirst()) { // なければ最初に移動
-                displayImage( mCursor );    // 表示
+
+        // ストレージへのアクセス権限がなければ
+        if ( !permission ) {
+            // アクセス権限をチェックして
+            if (checkPermission()) {
+                // コンテンツ情報を取得
+                permission = true;
+                getContentsInfo();
             }
         }
-        else if( v == playButton ) { // 再生ボタン
-            onClickPlayButton();
-        }
-        else if( v == nextButton ) { // 進むボタン
-            if (mCursor.moveToPrevious()) { // 前があれば
-                displayImage( mCursor );    // 表示
-            } else if (mCursor.moveToLast()) { // なければ最後に移動
-                displayImage( mCursor ); // 表示
+
+        // ストレージへのアクセス権限があれば
+        if( permission ) {
+            if (v == prevButton) {      // 戻るボタン
+                if (mCursor.moveToNext()) { // 次があれば
+                    displayImage(mCursor);    // 表示
+                } else if (mCursor.moveToFirst()) { // なければ最初に移動
+                    displayImage(mCursor);    // 表示
+                }
+            } else if (v == playButton) { // 再生ボタン
+                onClickPlayButton();
+            } else if (v == nextButton) { // 進むボタン
+                if (mCursor.moveToPrevious()) { // 前があれば
+                    displayImage(mCursor);    // 表示
+                } else if (mCursor.moveToLast()) { // なければ最後に移動
+                    displayImage(mCursor); // 表示
+                }
             }
         }
     }
