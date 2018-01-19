@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,13 +16,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int PERMISSIONS_REQUEST_CODE = 100;
+    private static final int TIMER_INTERVAL = 2000; // タイマー周期 (ms)
+    Timer mTimer;
+
     Button prevButton;      // 戻るボタン
     Button playButton;      // 再生ボタン
     Button nextButton;      // 進むボタン
     Cursor mCursor; // 画像のアクセスに使用するカーソル
+
+    Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 // 許可されている
                 getContentsInfo();
-                setClickListerner();
+                setClickListener();
             } else {
                 // 許可されていないので許可ダイアログを表示する
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_CODE);
@@ -44,13 +53,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Android 5系以下の場合
         } else {
             getContentsInfo();
-            setClickListerner();
+            setClickListener();
         }
     }
     
     @Override
     public void onClick(View v) {
-        // Log.d("UI_PARTS", "ボタンをタップしました");
+        Log.d("UI_PARTS", "ボタンをタップしました");
         if ( v == prevButton) {      // 戻るボタン
             if (mCursor.moveToNext()) { // 次があれば
                 displayImage( mCursor );    // 表示
@@ -59,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         else if( v == playButton ) { // 再生ボタン
-
+            onClickPlayButton((Button)v);
         }
         else if( v == nextButton ) { // 進むボタン
             if (mCursor.moveToPrevious()) { // 前があれば
@@ -70,13 +79,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+    // 再生ボタンを押した時の処理
+    public void onClickPlayButton( Button button ) {
+        if (mTimer == null) {
+            mTimer = new Timer();
+            mTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mCursor.moveToPrevious()) { // 前があれば
+                                displayImage( mCursor );    // 表示
+                            } else if (mCursor.moveToLast()) { // なければ最後に移動
+                                displayImage( mCursor ); // 表示
+                            }
+                        }
+                    });
+                }
+            }, TIMER_INTERVAL, TIMER_INTERVAL);
+
+            button.setText("停止");   // 停止ボタンに変更
+        } else {
+            // 再生中
+            mTimer.cancel();          // タイマー停止
+            mTimer = null;
+            button.setText("再生");   // 再生ボタンに変更
+        }
+
+    }
+
     // ボタンにリスナーを登録
-    private void setClickListerner()    {
+    private void setClickListener()    {
         prevButton = (Button) findViewById(R.id.prev_button);
         prevButton.setOnClickListener(this);
 
         playButton = (Button) findViewById(R.id.play_button);
-        prevButton.setOnClickListener(this);
+        playButton.setOnClickListener(this);
 
         nextButton = (Button) findViewById(R.id.next_button);
         nextButton.setOnClickListener(this);

@@ -35,7 +35,7 @@
         android:layout_alignBaseline="@+id/prev_button"
         android:layout_alignBottom="@+id/prev_button"
         android:layout_centerHorizontal="true"
-        android:text="再生/停止" />
+        android:text="再生" />
 
     <Button
         android:id="@+id/next_button"
