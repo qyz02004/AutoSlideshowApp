@@ -87,17 +87,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // ストレージへのアクセス権限があれば
         if( permission ) {
             if (v == prevButton) {      // 戻るボタン
-                if (mCursor.moveToNext()) { // 次があれば
+                if (mCursor.moveToPrevious()) { // 前があれば
                     displayImage(mCursor);    // 表示
-                } else if (mCursor.moveToFirst()) { // なければ最初に移動
+                } else if (mCursor.moveToLast()) { // なければ最後に移動
                     displayImage(mCursor);    // 表示
                 }
             } else if (v == playButton) { // 再生ボタン
                 onClickPlayButton();
             } else if (v == nextButton) { // 進むボタン
-                if (mCursor.moveToPrevious()) { // 前があれば
+                if (mCursor.moveToNext()) { // 次があれば
                     displayImage(mCursor);    // 表示
-                } else if (mCursor.moveToLast()) { // なければ最後に移動
+                } else if (mCursor.moveToFirst()) { // なければ最初に移動
                     displayImage(mCursor); // 表示
                 }
             }
