@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button prevButton;      // 戻るボタン
     Button playButton;      // 再生ボタン
     Button nextButton;      // 進むボタン
-    Cursor mCursor; // 画像のアクセスに使用するカーソル
+    Cursor mCursor;          // 画像のアクセスに使用するカーソル
 
     Handler mHandler = new Handler();
 
@@ -36,8 +36,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mCursor = null; // カーソル初期化
 
         // Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -68,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         else if( v == playButton ) { // 再生ボタン
-            onClickPlayButton((Button)v);
+            onClickPlayButton();
         }
         else if( v == nextButton ) { // 進むボタン
             if (mCursor.moveToPrevious()) { // 前があれば
@@ -81,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     // 再生ボタンを押した時の処理
-    public void onClickPlayButton( Button button ) {
+    public void onClickPlayButton() {
         if (mTimer == null) {
             mTimer = new Timer();
             mTimer.schedule(new TimerTask() {
@@ -100,14 +98,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }, TIMER_INTERVAL, TIMER_INTERVAL);
 
-            button.setText("停止");   // 停止ボタンに変更
+            playButton.setText("停止");       // 停止ボタンに変更
+            prevButton.setEnabled(false);       // 戻るボタン無効化
+            nextButton.setEnabled(false);       // 進むボタン無効化
         } else {
             // 再生中
             mTimer.cancel();          // タイマー停止
             mTimer = null;
-            button.setText("再生");   // 再生ボタンに変更
+            playButton.setText("再生");   // 再生ボタンに変更
+            prevButton.setEnabled(true);       // 戻るボタン有効化
+            nextButton.setEnabled(true);       // 進むボタン有効化
         }
-
     }
 
     // ボタンにリスナーを登録
