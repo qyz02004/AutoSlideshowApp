@@ -115,11 +115,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (mCursor.moveToPrevious()) { // 前があれば
-                                displayImage();    // 表示
-                            } else if (mCursor.moveToLast()) { // なければ最後に移動
-                                displayImage(); // 表示
-                            }
+                        if (mCursor.moveToNext()) { // 次があれば
+                            displayImage();    // 表示
+                        } else if (mCursor.moveToFirst()) { // なければ最初に移動
+                            displayImage(); // 表示
+                        }
                         }
                     });
                 }
